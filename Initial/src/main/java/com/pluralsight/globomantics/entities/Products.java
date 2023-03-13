@@ -1,7 +1,5 @@
 package com.pluralsight.globomantics.entities;
 
-import java.time.Instant;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
