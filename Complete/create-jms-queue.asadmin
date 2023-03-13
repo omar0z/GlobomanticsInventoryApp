@@ -1,0 +1,3 @@
+create-jms-resource --enabled=true --property=Name=ORDERS --restype=jakarta.jms.Queue jms/orders
+create-jms-resource --enabled=true --property=Name=RESTOCK --restype=jakarta.jms.Topic jms/restock
+deploy /opt/payara/deployments/globomantics-inventory-app.war
