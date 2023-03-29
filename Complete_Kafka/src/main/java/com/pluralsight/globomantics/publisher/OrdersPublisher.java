@@ -45,6 +45,7 @@ public class OrdersPublisher {
 			message.setText(orderInformation.toString());
 
 			producer.send(message);
+			System.out.println("Order submitted! Order: "+orderInformation.toString());
 
 		} catch (JMSException e) {
 			e.printStackTrace();
