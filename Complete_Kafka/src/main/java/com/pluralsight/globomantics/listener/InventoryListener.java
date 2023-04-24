@@ -35,7 +35,7 @@ public class InventoryListener implements MessageListener {
 		TextMessage textMessage = (TextMessage) message;
 
 		try {
-			System.out.println("A new order has arrived!: " + textMessage.getText());
+			// System.out.println("A new order has arrived!: " + textMessage.getText());
 
 			JsonReader jsonReader = Json.createReader(new StringReader(textMessage.getText()));
 			JsonObject orderInformation = jsonReader.readObject();

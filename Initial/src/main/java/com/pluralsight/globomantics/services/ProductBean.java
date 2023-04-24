@@ -35,6 +35,7 @@ public class ProductBean implements Service {
             this.emit(productType);
             return "Restock order sent. Waiting for supplier...";
 
+            
         } else {
 
             int newStockQuantity = oldStockQuantity - quantity;

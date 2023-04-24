@@ -1,39 +1,40 @@
 package com.pluralsight.globomantics.publisher;
 
-import jakarta.annotation.Resource;
+import java.net.InetAddress;
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+
 import jakarta.ejb.Singleton;
-import jakarta.jms.Connection;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.JMSException;
-import jakarta.jms.MessageProducer;
-import jakarta.jms.Session;
-import jakarta.jms.TextMessage;
-import jakarta.jms.Topic;
 
 @Singleton
 public class RestockPublisher {
 
-	@Resource(lookup = "jms/__defaultConnectionFactory")
-	private ConnectionFactory jmsFactory;
-
-	@Resource(lookup = "jms/restock")
-	private Topic jmsTopic;
-
 	public void sendRestockOrder(String restockOrder) {
-
-		TextMessage message;
-
-		try (Connection connection = jmsFactory.createConnection();
-				Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-				MessageProducer producer = session.createProducer(jmsTopic)) {
-
-			message = session.createTextMessage();
-			message.setText(restockOrder);
-			producer.send(message);
-
-		} catch (JMSException e) {
-			e.printStackTrace();
+		System.out.println("I'm at the restock order method...");
+		
+		Properties config = new Properties();
+		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "broker:9092");
+		config.put(ProducerConfig.ACKS_CONFIG, "all");
+		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+		System.out.println("Props are set...");
+		
+		KafkaProducer<String,String> restockProducer = new KafkaProducer<>(config);
+		final ProducerRecord<String, String> record = new ProducerRecord<>("restock", null, restockOrder);
+		Future<RecordMetadata> future = restockProducer.send(record);
+		System.out.println("Record is sent...");
+		
+		try{
+			System.out.println(future.get());
+		} catch(ExecutionException | InterruptedException exception){
+			System.out.println(exception.getMessage());
 		}
 	}
-    
+
 }

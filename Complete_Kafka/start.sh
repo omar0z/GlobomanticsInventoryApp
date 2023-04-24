@@ -5,4 +5,4 @@ mvn clean install
 docker build -t globomantics .
 
 #Run the Globomantics Docker container
-docker run --name globomantics -p 8080:8080 -p 4848:4848 globomantics
+docker run --name globomantics -p 8080:8080 -p 4848:4848 -p 29092:29092 globomantics

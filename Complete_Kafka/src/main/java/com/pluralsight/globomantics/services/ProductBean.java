@@ -22,29 +22,33 @@ public class ProductBean implements Service {
     @Override
     public String fetch(Object... args) {
 
-        String productType = (String) args[0];
-        Integer quantity = (Integer) args[1];
+         String productType = (String) args[0];
+        // Integer quantity = (Integer) args[1];
 
-        Products product = this.findBy(productType);
+        // Products product = this.findBy(productType);
 
-        int oldStockQuantity = product.getQuantity();
+        // int oldStockQuantity = product.getQuantity();
 
-        if (oldStockQuantity < quantity) {
+        // if (oldStockQuantity < quantity) {
 
-            System.out.println("Sorry!! There is not enough stock to fulfill the order!. Sending restock order...");
+            // System.out.println("Sorry!! There is not enough stock to fulfill the order!. Sending restock order...");
+            System.out.println("Emmitting message to kafka...");
             this.emit(productType);
-            return "Restock order sent. Waiting for supplier...";
-
-        } else {
-
-            int newStockQuantity = oldStockQuantity - quantity;
-            product.setQuantity(newStockQuantity);
-            em.persist(product);
-            return String.format("Order fulfilled - %d %s has been taken out of stock. %d %s remain available.",
-                    quantity, productType, newStockQuantity, productType);
+            // return "Restock order sent. Waiting for supplier...";
+            return "bacon";
 
         }
-    }
+
+    //     } else {
+
+    //         int newStockQuantity = oldStockQuantity - quantity;
+    //         product.setQuantity(newStockQuantity);
+    //         em.persist(product);
+    //         return String.format("Order fulfilled - %d %s has been taken out of stock. %d %s remain available.",
+    //                 quantity, productType, newStockQuantity, productType);
+
+    //     }
+    // }
 
     @Override
     public Products findBy(String field) {
