@@ -27,7 +27,7 @@ public class OrdersPublisher {
 
 	private String[] productTypes = { "Nuts", "Bolts", "Nails", "Screws" };
 
-	@Schedule(second = "*/10", minute = "*", hour = "*", persistent = false)
+	@Schedule(second = "*/2", minute = "*", hour = "*", persistent = false)
 	public void sendOrderInformation() {
 
 		TextMessage message;
@@ -45,7 +45,7 @@ public class OrdersPublisher {
 			message.setText(orderInformation.toString());
 
 			producer.send(message);
-			// System.out.println("Order submitted! Order: "+orderInformation.toString());
+			System.out.println("Order submitted! Order: "+orderInformation.toString());
 
 		} catch (JMSException e) {
 			e.printStackTrace();

@@ -16,25 +16,16 @@ import jakarta.ejb.Singleton;
 public class RestockPublisher {
 
 	public void sendRestockOrder(String restockOrder) {
-		System.out.println("I'm at the restock order method...");
 		
 		Properties config = new Properties();
 		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "broker:9092");
 		config.put(ProducerConfig.ACKS_CONFIG, "all");
 		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-		System.out.println("Props are set...");
 		
 		KafkaProducer<String,String> restockProducer = new KafkaProducer<>(config);
 		final ProducerRecord<String, String> record = new ProducerRecord<>("restock", null, restockOrder);
 		Future<RecordMetadata> future = restockProducer.send(record);
-		System.out.println("Record is sent...");
-		
-		try{
-			System.out.println(future.get());
-		} catch(ExecutionException | InterruptedException exception){
-			System.out.println(exception.getMessage());
-		}
 	}
 
 }

@@ -3,6 +3,7 @@ services:
   payara:
     container_name: payara
     build: .
+    image: globomantics
     ports:
       - 8080:8080
       - 4848:4848

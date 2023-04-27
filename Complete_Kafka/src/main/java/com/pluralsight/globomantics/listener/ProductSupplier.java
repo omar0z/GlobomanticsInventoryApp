@@ -1,40 +1,82 @@
 package com.pluralsight.globomantics.listener;
 
 import java.io.StringReader;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 
 import com.pluralsight.globomantics.services.Service;
 
-import jakarta.ejb.ActivationConfigProperty;
-import jakarta.ejb.MessageDriven;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import jakarta.jms.JMSException;
-import jakarta.jms.Message;
-import jakarta.jms.MessageListener;
-import jakarta.jms.TextMessage;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 
-@MessageDriven(name = "restockmdb", activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "jms/restock"),
-        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "jakarta.jms.Topic") })
-public class ProductSupplier implements MessageListener {
+public class ProductSupplier {
 
     @Inject
-    private Service productService;
+    private Instance<Service> productService;
 
-    @Override
-    public void onMessage(Message message) {
+    private final KafkaConsumer<String, String> consumer;
+    private final AtomicBoolean shutdown;
+    private final CountDownLatch shutdownLatch;
+
+    public ProductSupplier() {
+
+        Properties config = new Properties();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "broker:9092");
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "product-supplier");
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.StringDeserializer");
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                "org.apache.kafka.common.serialization.StringDeserializer");
+
+        this.consumer = new KafkaConsumer<>(config);
+        this.shutdown = new AtomicBoolean(false);
+        this.shutdownLatch = new CountDownLatch(1);
+    }
+
+    public void run() {
         try {
-            JsonObject restockRequest = Json.createReader(new StringReader(((TextMessage) message).getText()))
+            consumer.subscribe(Arrays.asList("restock"));
+
+            while (!shutdown.get()) {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(500));
+                records.forEach(record -> process(record));
+            }
+        } finally {
+            consumer.close();
+            shutdownLatch.countDown();
+        }
+    }
+
+    public void shutdown() throws InterruptedException {
+        shutdown.set(true);
+        shutdownLatch.await();
+    }
+
+    public void process(ConsumerRecord<String, String> record) {
+        try {
+            JsonObject restockRequest = Json.createReader(new StringReader(record.value()))
                     .readObject();
 
             String productType = restockRequest.getString("productType");
 
-            System.out.println(String.format("Restocking %s ...",  productType));
+            System.out.println(String.format("Restocking %s ...", productType));
 
-            productService.update(productType);
+            productService.get().update(productType);
 
-        } catch (JMSException e) {
+        } catch (Exception e) {
             e.printStackTrace(System.err);
         }
     }

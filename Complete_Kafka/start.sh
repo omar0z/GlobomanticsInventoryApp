@@ -1,8 +1,15 @@
 #Build the project
 mvn clean install
 
-#Build the Docker image
-docker build -t globomantics .
+#Start Zookeeper and Kafka
+docker-compose up -d kafka
 
-#Run the Globomantics Docker container
-docker run --name globomantics -p 8080:8080 -p 4848:4848 -p 29092:29092 globomantics
+#Wait for kafka to initialize
+echo "Kafka is starting..."
+sleep 5
+
+#Create kafka topic
+docker-compose exec kafka kafka-topics --bootstrap-server broker:9092 --create --topic restock
+
+#Start Payara Application Server
+docker-compose up payara
