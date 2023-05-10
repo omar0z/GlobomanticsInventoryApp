@@ -24,8 +24,8 @@ public class RestockPublisher {
 		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 		
 		KafkaProducer<String,String> restockProducer = new KafkaProducer<>(config);
-		final ProducerRecord<String, String> record = new ProducerRecord<>("restock", null, restockOrder);
-		Future<RecordMetadata> future = restockProducer.send(record);
+		ProducerRecord<String, String> record = new ProducerRecord<>("restock", null, restockOrder);
+		restockProducer.send(record);
 	}
 
 }

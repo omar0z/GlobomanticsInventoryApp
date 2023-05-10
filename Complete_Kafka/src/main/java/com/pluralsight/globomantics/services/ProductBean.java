@@ -32,7 +32,7 @@ public class ProductBean implements Service {
     @PostConstruct
     public void initSupplierForRestock(){
         System.out.println("Initializing supplier listener...");
-        executor.submit(() -> {supplier.run();});
+        executor.submit(() -> {supplier.listen();});
     }
     
     @Override

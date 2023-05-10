@@ -17,7 +17,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 
 import com.pluralsight.globomantics.services.Service;
 
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -25,11 +24,10 @@ import jakarta.json.JsonObject;
 public class ProductSupplier {
 
     @Inject
-    private Instance<Service> productService;
+    private Service productService;
 
     private final KafkaConsumer<String, String> consumer;
-    private final AtomicBoolean shutdown;
-    private final CountDownLatch shutdownLatch;
+ 
 
     public ProductSupplier() {
 
@@ -42,28 +40,22 @@ public class ProductSupplier {
                 "org.apache.kafka.common.serialization.StringDeserializer");
 
         this.consumer = new KafkaConsumer<>(config);
-        this.shutdown = new AtomicBoolean(false);
-        this.shutdownLatch = new CountDownLatch(1);
+    
     }
 
-    public void run() {
+    public void listen() {
         try {
             consumer.subscribe(Arrays.asList("restock"));
 
-            while (!shutdown.get()) {
+            while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(500));
                 records.forEach(record -> process(record));
             }
         } finally {
             consumer.close();
-            shutdownLatch.countDown();
         }
     }
 
-    public void shutdown() throws InterruptedException {
-        shutdown.set(true);
-        shutdownLatch.await();
-    }
 
     public void process(ConsumerRecord<String, String> record) {
         try {
@@ -74,7 +66,7 @@ public class ProductSupplier {
 
             System.out.println(String.format("Restocking %s ...", productType));
 
-            productService.get().update(productType);
+            productService.update(productType);
 
         } catch (Exception e) {
             e.printStackTrace(System.err);
