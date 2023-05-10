@@ -35,7 +35,6 @@ public class ProductBean implements Service {
             this.emit(productType);
             return "Restock order sent. Waiting for supplier...";
 
-            
         } else {
 
             int newStockQuantity = oldStockQuantity - quantity;
@@ -64,9 +63,9 @@ public class ProductBean implements Service {
 
     @Override
     public void emit(Object... args) {
-        
+
         String productType = (String) args[0];
-        
+
         JsonObject restockInformation = Json.createObjectBuilder()
 					.add("productType", productType)
 					.add("quantity", Products.STOCK_QUANTITY).build();
